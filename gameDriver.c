@@ -166,6 +166,7 @@ int playCheckers(int redPieces, int whitePieces, int redConcede, int whiteConced
 
 //TODO close sockets before exiting to not force OS to have to
 void endGame(int redPieces, int whitePieces, int redConcede, int whiteConcede){
+  printMyBoard(myColor);
   if(redPieces < 1){
     printf("Red has no pieces, white wins!\n");
   } else if(whitePieces < 1){
