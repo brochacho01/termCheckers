@@ -6,15 +6,15 @@
 #include <stdlib.h>
 #include <string.h>
 
-int playCheckers(int sock_desc, int redPieces, int whitePieces, int myConcede, int opponentConcede);
+int playCheckers(int redPieces, int whitePieces, int myConcede, int opponentConcede);
 void endGame(int redPieces, int whitePieces, int redConcede, int whiteConcede);
 
 char myColor;
 char curTurn;
 char receive_buffer[RECEIVE_BUFFER_SIZE];
+int sock_desc;
 
 int main(){
-  int sock_desc;
   // Work to host/connect to a game
   printf("Would you like to host or connect? (h/c) ");
   char serv = tolower(getchar());
@@ -28,12 +28,10 @@ int main(){
     // Init server
     sock_desc = createServerAndWait();
     receiveAck(sock_desc);
-    printf("I am server and received sock_desc %d\n", sock_desc);
   } else {
     // Connect to server
     sock_desc = connectToServer();
     sendAck(sock_desc);
-    printf("I am client and I received sock_desc %d\n", sock_desc);
   }
   if(sock_desc == -1){
     printf("Fatal error during connection, returned sock_desc == -1\n");
@@ -58,6 +56,7 @@ int main(){
       send_message(sock_desc, receive_buffer);
     }
     receive_board(sock_desc, receive_buffer);
+    sendAck(sock_desc);
   } else {
     receive(sock_desc, receive_buffer, RECEIVE_BUFFER_SIZE);
     myColor = receive_buffer[0];
@@ -65,17 +64,18 @@ int main(){
     // Have only the server create the board and then pass it to the client
     createBoard();
     send_board(sock_desc, receive_buffer);
+    receiveAck(sock_desc);
   }
   int redPieces = 12;
   int whitePieces = 12;
   int redConcede = 0;
   int whiteConcede = 0;
-  playCheckers(sock_desc, redPieces, whitePieces, redConcede, whiteConcede);
+  playCheckers(redPieces, whitePieces, redConcede, whiteConcede);
   return 0;
 }
 
 
-int playCheckers(int sock_desc, int redPieces, int whitePieces, int redConcede, int whiteConcede){
+int playCheckers(int redPieces, int whitePieces, int redConcede, int whiteConcede){
   curTurn = 'r';
   char fromCoord[3] = {'h'};
   char toCoord[3] = {'h'};

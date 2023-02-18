@@ -60,7 +60,6 @@ int send_board(int fd, char *receive_buffer)
     }
   }
   write(fd, receive_buffer, RECEIVE_BUFFER_SIZE);
-  receiveAck(fd); 
   return 0;
 }
 
@@ -76,7 +75,6 @@ int receive_board(int fd, char * receive_buffer)
       bufIndex++;
     }
   }
-  sendAck(fd);
   return 0;
 }
 
@@ -105,34 +103,27 @@ int receiveAck(int fd)
 int receiveTurnData(int fd, char * receive_buffer, int *redPieces, int *whitePieces, int *redConcede, 
 int *whiteConcede)
 {
-  printf("Made it to receive turn data, trying to receive from %d\n", fd);
   // Need to receive a board
   receive_board(fd, receive_buffer);
   sendAck(fd);
-  printf("Received board\n");
   // Need to receive redPieces and whitePieces
   receivePieces(fd, redPieces, whitePieces);
   sendAck(fd);
-  printf("Received pieces\n");
   // Need to receive redConcede and whiteConcede
   receiveConcedeStatus(fd, redConcede, whiteConcede);
-  printf("Reeived concede status\n");
+  sendAck(fd);
   return 0;
 }
 
 int sendTurnData(int fd, char * receive_buffer, int *redPieces, int *whitePieces, int *redConcede, 
 int *whiteConcede)
 {
-  printf("Made to to send turn data, trying to send to %d\n", fd);
   send_board(fd, receive_buffer);
   receiveAck(fd);
-  printf("Sent board\n");
   sendPieces(fd, redPieces, whitePieces);
   receiveAck(fd);
-  printf("Sent pieces\n");
   sendConcedeStatus(fd, redConcede, whiteConcede);
   receiveAck(fd);
-  printf("Sent concede status\n");
   return 0;
 }
 
@@ -143,7 +134,6 @@ int receivePieces(int fd, int *redPieces, int *whitePieces)
   sendAck(fd);
   read(fd, whitePieces, sizeof(int));
   sendAck(fd);
-  printf("Received redpieces %d, and whitepieces, %d\n", *redPieces, *whitePieces);
   return 0;
 }
 
@@ -162,7 +152,6 @@ int receiveConcedeStatus(int fd, int *redConcede, int *whiteConcede)
   sendAck(fd);
   read(fd, whiteConcede, sizeof(int));
   sendAck(fd);
-  printf("Received redConcede %d, whiteConcede %d\n", *redConcede, *whiteConcede);
   return 0;
 }
 
@@ -221,6 +210,5 @@ int createServerAndWait(void){
 int connectToServer(void){
   struct sockaddr_in server_endpoint;
   int sock_desc = connect_server(&server_endpoint, AF_INET, HOST_IP_ADDRESS, SERVER_PORT, SOCK_STREAM);
-  printf("My sock_desc is %d\n", sock_desc);
   return sock_desc;
 }
