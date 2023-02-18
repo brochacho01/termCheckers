@@ -4,6 +4,11 @@
 #include <string.h>
 #include <unistd.h>
 
+int receivePieces(int fd, int *redPieces, int *whitePieces);
+int sendPieces(int fd, int *redPieces, int *whitePieces);
+int receiveConcedeStatus(int fd, int *redConcede, int *whiteConcede);
+int sendConcedeStatus(int fd, int *redConcede, int *whiteConcede);
+
 int create_server_socket(struct sockaddr_in* sock_addr, sa_family_t sa_family, const char * ip_addr, in_port_t port, int type)
 {
   int fd = socket(sa_family, type, 0);
@@ -44,10 +49,34 @@ int receive(int fd, char * receive_buffer, int buffer_size)
   return 0;
 }
 
-int send_board(int fd, int **board)
+int send_board(int fd, char *receive_buffer)
 {
-  write(fd, board, 128);
-  
+  memset(receive_buffer, 0, RECEIVE_BUFFER_SIZE);
+  int bufIndex = 0;
+  for(int i = 0; i < 8; i++){
+    for(int j = 0; j < 8; j++){
+      receive_buffer[bufIndex] = board[i][j];
+      bufIndex++;
+    }
+  }
+  write(fd, receive_buffer, RECEIVE_BUFFER_SIZE);
+  receiveAck(fd); 
+  return 0;
+}
+
+int receive_board(int fd, char * receive_buffer)
+{
+  // Need to pull bytes from receive_buffer into game board
+  memset(receive_buffer, 0, RECEIVE_BUFFER_SIZE);
+  read(fd, receive_buffer, RECEIVE_BUFFER_SIZE);
+  int bufIndex = 0;
+  for(int i = 0; i < 8; i++){
+    for(int j = 0; j < 8; j++){
+      board[i][j] = receive_buffer[bufIndex];
+      bufIndex++;
+    }
+  }
+  sendAck(fd);
   return 0;
 }
 
@@ -57,6 +86,95 @@ int send_message(int fd, char * message)
 
   return 0;
 }
+
+int sendAck(int fd)
+{
+  write(fd, ACKNOWLEDGE_MESSAGE, strlen(ACKNOWLEDGE_MESSAGE));
+  
+  return 0;
+}
+
+int receiveAck(int fd)
+{
+  char myBuf[RECEIVE_BUFFER_SIZE];
+  read(fd, myBuf, RECEIVE_BUFFER_SIZE);
+  return 0;
+}
+
+/* Helper functions for sending and receiving turn data */
+int receiveTurnData(int fd, char * receive_buffer, int *redPieces, int *whitePieces, int *redConcede, 
+int *whiteConcede)
+{
+  printf("Made it to receive turn data, trying to receive from %d\n", fd);
+  // Need to receive a board
+  receive_board(fd, receive_buffer);
+  sendAck(fd);
+  printf("Received board\n");
+  // Need to receive redPieces and whitePieces
+  receivePieces(fd, redPieces, whitePieces);
+  sendAck(fd);
+  printf("Received pieces\n");
+  // Need to receive redConcede and whiteConcede
+  receiveConcedeStatus(fd, redConcede, whiteConcede);
+  printf("Reeived concede status\n");
+  return 0;
+}
+
+int sendTurnData(int fd, char * receive_buffer, int *redPieces, int *whitePieces, int *redConcede, 
+int *whiteConcede)
+{
+  printf("Made to to send turn data, trying to send to %d\n", fd);
+  send_board(fd, receive_buffer);
+  receiveAck(fd);
+  printf("Sent board\n");
+  sendPieces(fd, redPieces, whitePieces);
+  receiveAck(fd);
+  printf("Sent pieces\n");
+  sendConcedeStatus(fd, redConcede, whiteConcede);
+  receiveAck(fd);
+  printf("Sent concede status\n");
+  return 0;
+}
+
+int receivePieces(int fd, int *redPieces, int *whitePieces)
+{
+  // Zero out buffer then read in the 2 ints that should've been sent
+  read(fd, redPieces, sizeof(int));
+  sendAck(fd);
+  read(fd, whitePieces, sizeof(int));
+  sendAck(fd);
+  printf("Received redpieces %d, and whitepieces, %d\n", *redPieces, *whitePieces);
+  return 0;
+}
+
+int sendPieces(int fd, int *redPieces, int *whitePieces)
+{
+  write(fd, redPieces, sizeof(int));
+  receiveAck(fd);
+  write(fd, whitePieces, sizeof(int));
+  receiveAck(fd);
+  return 0;
+}
+
+int receiveConcedeStatus(int fd, int *redConcede, int *whiteConcede)
+{
+  read(fd, redConcede, sizeof(int));
+  sendAck(fd);
+  read(fd, whiteConcede, sizeof(int));
+  sendAck(fd);
+  printf("Received redConcede %d, whiteConcede %d\n", *redConcede, *whiteConcede);
+  return 0;
+}
+
+int sendConcedeStatus(int fd, int *redConcede, int *whiteConcede)
+{
+  write(fd, redConcede, sizeof(int));
+  receiveAck(fd);
+  write(fd, whiteConcede, sizeof(int));
+  receiveAck(fd);
+  return 0;
+}
+
 
 void init_sock_addr_in(struct sockaddr_in* sock_addr, sa_family_t sa_family, const char * ip_addr, in_port_t port)
 {
