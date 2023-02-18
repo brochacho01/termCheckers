@@ -44,6 +44,13 @@ int receive(int fd, char * receive_buffer, int buffer_size)
   return 0;
 }
 
+int send_board(int fd, int **board)
+{
+  write(fd, board, 128);
+  
+  return 0;
+}
+
 int send_message(int fd, char * message)
 {
   write(fd, message, strlen(message));
@@ -71,3 +78,31 @@ void read_user_input(char* prompt, char* read_buffer, int read_buffer_size)
   read_buffer[strcspn(read_buffer, "\n")] = 0;
 }
 
+
+/* Handle creating a server and waiting for client to connect */
+int createServerAndWait(void){
+  struct sockaddr_in server_endpoint;
+  struct sockaddr_in client_endpoint;
+  int client_sock_desc = -1;
+  int server_sock_desc = create_server_socket(&server_endpoint, AF_INET, HOST_IP_ADDRESS, SERVER_PORT,
+  SOCK_STREAM);
+
+  printf("Listening on Network Interface: %s Network Port: %d \n", HOST_IP_ADDRESS, SERVER_PORT);
+  int connected = 0;
+  while(!connected){
+    printf("Waiting for client connection...\n");
+    socklen_t sock_len = sizeof(struct sockaddr_in);
+    client_sock_desc = accept(server_sock_desc, (struct sockaddr *)&client_endpoint, &sock_len);
+    char *client_ip = inet_ntoa(client_endpoint.sin_addr);
+    printf("Accepted connection: %sL%d\n", client_ip, ntohs(client_endpoint.sin_port));
+    connected = 1;
+  }
+  return client_sock_desc;
+}
+
+int connectToServer(void){
+  struct sockaddr_in server_endpoint;
+  int sock_desc = connect_server(&server_endpoint, AF_INET, HOST_IP_ADDRESS, SERVER_PORT, SOCK_STREAM);
+  printf("My sock_desc is %d\n", sock_desc);
+  return sock_desc;
+}

@@ -4,6 +4,7 @@
 #include "networkUtilities.h"
 #include <ctype.h>
 #include <stdlib.h>
+#include <string.h>
 
 int playCheckers(int redPieces, int whitePieces, int myConcede, int opponentConcede);
 void endGame(int redPieces, int whitePieces, int redConcede, int whiteConcede);
@@ -12,6 +13,33 @@ char myColor;
 char curTurn;
 
 int main(){
+  // Work to host/connect to a game
+  printf("Would you like to host or connect? (h/c) ");
+  char serv = tolower(getchar());
+  printf("\n");
+  // Create buffer for sending messages/responses
+  char receive_buffer[RECEIVE_BUFFER_SIZE];
+  memset(receive_buffer, 0, RECEIVE_BUFFER_SIZE);
+  
+  // Whether user running this is hosting or connecting, sock_desc will be the fd they write to and read from
+  int sock_desc;
+  if(serv == 'h'){
+    // Init server
+    sock_desc = createServerAndWait();
+    sprintf(receive_buffer, "Test message from server to client\n");
+    send_message(sock_desc, receive_buffer);
+  } else {
+    // Connect to server
+    sock_desc = connectToServer();
+    receive(sock_desc, receive_buffer, RECEIVE_BUFFER_SIZE);
+    printf("As a client, I received %s\n", receive_buffer);
+    printf("I am client and got my sock desc which is %d. Exiting\n", sock_desc);
+    exit(-1);
+  }
+  if(sock_desc == -1){
+    printf("Fatal error during connection, returned sock_desc == -1\n");
+    exit(-1);
+  } 
   int choice = 0;
   while((choice != 114) && (choice != 119)){
     printf("What color would you like to play as? (r/w) ");
