@@ -137,6 +137,7 @@ int playCheckers(int redPieces, int whitePieces, int redConcede, int whiteConced
       toCoord[0] = 'h';
       // If we have already taken a piece need to check to see if we can take again for double
       //TODO this is not quite right, it should only be the piece that moved that can take again
+      //TODO also currently a piece can theoretically take infinitely many pieces in a turn
       if(take && moveMade){
         take = canTake(curTurn);
         if(take){
