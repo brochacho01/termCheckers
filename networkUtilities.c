@@ -65,7 +65,6 @@ int send_board(int fd, char *receive_buffer)
 
 int receive_board(int fd, char * receive_buffer)
 {
-  // Need to pull bytes from receive_buffer into game board
   memset(receive_buffer, 0, RECEIVE_BUFFER_SIZE);
   read(fd, receive_buffer, RECEIVE_BUFFER_SIZE);
   int bufIndex = 0;
@@ -103,13 +102,10 @@ int receiveAck(int fd)
 int receiveTurnData(int fd, char * receive_buffer, int *redPieces, int *whitePieces, int *redConcede, 
 int *whiteConcede)
 {
-  // Need to receive a board
   receive_board(fd, receive_buffer);
   sendAck(fd);
-  // Need to receive redPieces and whitePieces
   receivePieces(fd, redPieces, whitePieces);
   sendAck(fd);
-  // Need to receive redConcede and whiteConcede
   receiveConcedeStatus(fd, redConcede, whiteConcede);
   sendAck(fd);
   return 0;
@@ -129,7 +125,6 @@ int *whiteConcede)
 
 int receivePieces(int fd, int *redPieces, int *whitePieces)
 {
-  // Zero out buffer then read in the 2 ints that should've been sent
   read(fd, redPieces, sizeof(int));
   sendAck(fd);
   read(fd, whitePieces, sizeof(int));
@@ -173,18 +168,6 @@ void init_sock_addr_in(struct sockaddr_in* sock_addr, sa_family_t sa_family, con
   sock_addr->sin_addr.s_addr = inet_addr(ip_addr);
   sock_addr->sin_port = htons(port);
 }
-
-void read_user_input(char* prompt, char* read_buffer, int read_buffer_size)
-{
-  memset(read_buffer, 0, read_buffer_size);
-
-  printf("%s", prompt);
-
-  fgets(read_buffer, read_buffer_size, stdin);
-
-  read_buffer[strcspn(read_buffer, "\n")] = 0;
-}
-
 
 /* Handle creating a server and waiting for client to connect */
 int createServerAndWait(void){

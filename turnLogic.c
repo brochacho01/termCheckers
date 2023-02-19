@@ -30,6 +30,7 @@ void turnToKing(int ix, int iy);
 void help(void){
   printf("If you cannot move any pieces, you automatically forfeit!\n");
   printf("If you are able to take a piece, you must.\n");
+  printf("One twist on normal checkers though is that you can take more than two pieces a turn\n");
   printf("When you are asked to enter a coordinate, enter as row-column pairs without spaces.\n");
   printf("For example, if I want to move my piece at row 1, column 5, I would enter it as: 15\n");
   printf("Additionally, if you would like to concede, press c on request for input\n");
@@ -47,6 +48,7 @@ int concede(void){
   }
 }
 
+/* Functions to calculate if a player can take a piece */
 int canTake(char curTurn){
   int take = 0;
   if(curTurn == 'r'){
@@ -235,7 +237,7 @@ int calcWhiteKingTake(int i, int j){
   return 0;
 }
 
-/* Move taking logic */
+/* Move taking logic and some input validation */
 int validateMove(char fromCoord[], char toCoord[], int ableTake, char myColor, int *redPieces,
   int *whitePieces){
   printf("From coord is %s\n", fromCoord);
@@ -289,6 +291,7 @@ int validateMove(char fromCoord[], char toCoord[], int ableTake, char myColor, i
   return status;
 }
 
+// Interface to process the input for a player trying to take a piece
 int processTake(int ix, int iy, int jx, int jy, int *redPieces, int *whitePieces){
   int takeColor;
   int status = 0;
@@ -316,6 +319,7 @@ int processTake(int ix, int iy, int jx, int jy, int *redPieces, int *whitePieces
   return status;
 }
 
+// Input validation for a regular piece take
 int takeWithReg(int ix, int iy, int jx, int jy, int takeColor){
   int status = 0;
   // Need to validate we are moving in the right direction
@@ -341,6 +345,7 @@ int takeWithKing(int ix, int iy, int jx, int jy, int takeColor){
   return processJump(ix, iy, jx, jy, takeColor);
 }
 
+// Do the actual taking of a piece and updating the board
 int processJump(int ix, int iy, int jx, int jy, int takeColor){
   int status = 0;
   // Need to check if we're going left or right
@@ -416,15 +421,13 @@ int processJump(int ix, int iy, int jx, int jy, int takeColor){
   return status;
 }
 
+// Check the color of a piece to validate that it is of the appropriate color to be jumped
 int checkColor(int ix, int iy, int takeColor){
   if(takeColor == takeRed){
     if((board[ix][iy] == red) || (board[ix][iy] == redKing)){
       return 1;
     } else {
       printf("Trying to take your own piece!\n");
-      printf("TakeColor is %d\n", takeColor);
-      printf("Board of ix, iy, is %c\n", board[ix][iy]);
-      printf("ix is %d, iy is %d\n", ix, iy);
       return 0;
     }
   } else {
@@ -437,6 +440,7 @@ int checkColor(int ix, int iy, int takeColor){
   }
 }
 
+/* Interface to process moving a piece, also does some input validation */
 int processMove(int ix, int iy, int jx, int jy, char myColor){
   int status = 0;
   // Check to see if there is a piece at the coordinate
@@ -469,6 +473,7 @@ int processMove(int ix, int iy, int jx, int jy, char myColor){
   return status;
 }
 
+// Further input validation for moving a regular piece
 int processRegMove(int ix, int jx, int myColor){
   // Need to make sure that the piece is moving in the proper direction
   if(myColor == 'r'){
@@ -487,6 +492,7 @@ int processRegMove(int ix, int jx, int myColor){
   return 1;
 }
 
+// Do the actual move and update the board
 int doMove(int ix, int iy, int jx, int jy){
   if(board[jx][jy] == emptyChar){
     board[jx][jy] = board[ix][iy];
@@ -498,6 +504,7 @@ int doMove(int ix, int iy, int jx, int jy){
   }
 }
 
+// If a piece has made it to it's opposite side, update its value of not a king
 void turnToKing(int ix, int iy){
   //Check to see if we are at either end of the board
   if(ix == 0){

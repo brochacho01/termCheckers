@@ -12,6 +12,7 @@ void createBoard(void);
 
 unsigned char board[8][8];
 
+/* Interface to print the board orientated towards the passed in color */
 void printMyBoard(char myColor){
   if(myColor == 'r'){
     printBoardForRed();
