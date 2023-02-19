@@ -2,7 +2,7 @@
 #
 CC = gcc
 CFLAGS = -g -Wall -Wextra
-OBJS = checkBoard.o gameDriver.o turnLogic.o networkUtilities.o
+OBJS = checkBoard.o gameDriver.o turnLogic.o networkUtilities.o errorReporting.o
 
 all: build
 
@@ -16,4 +16,4 @@ run: build
 	./termCheckers
 
 # dependency list
-$(OBJS) : checkBoard.h globals.h turnLogic.h networkUtilities.h
+$(OBJS) : checkBoard.h globals.h turnLogic.h networkUtilities.h errorReporting.h

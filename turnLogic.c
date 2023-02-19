@@ -3,6 +3,7 @@
 #include <ctype.h>
 #include "globals.h"
 #include "checkBoard.h"
+#include "errorReporting.h"
 
 void help(void);
 int concede(void);
@@ -301,7 +302,7 @@ int processTake(int ix, int iy, int jx, int jy, int *redPieces, int *whitePieces
     takeColor = takeRed;
   } else {
     printf("CRITICAL ERROR\n");
-    exit(-1);
+    recordErrorAndClose(ix, iy, jx, jy, redPieces, whitePieces);
   }
   if((board[ix][iy] == red) || (board[ix][iy] == white)){
     status = takeWithReg(ix, iy, jx, jy, takeColor);
