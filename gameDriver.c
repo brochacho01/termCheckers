@@ -104,6 +104,7 @@ int playCheckers(int redPieces, int whitePieces, int redConcede, int whiteConced
             } else {
               whiteConcede = 1;
             }
+            sendTurnData(sock_desc, receive_buffer, &redPieces, &whitePieces, &redConcede, &whiteConcede);
             endGame(redPieces, whitePieces, redConcede, whiteConcede);
           }
         }
