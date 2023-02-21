@@ -34,7 +34,7 @@ int main(){
     sendAck(sock_desc);
   }
   if(sock_desc == -1){
-    printf("Fatal error during connection, returned sock_desc == -1\n");
+    printf("Fatal error during connection, there is no host on this machine.\n");
     exit(-1);
   }
   char choice;
