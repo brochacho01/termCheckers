@@ -80,7 +80,7 @@ int playCheckers(int redPieces, int whitePieces, int redConcede, int whiteConced
   char fromCoord[3] = {'h'};
   char toCoord[3] = {'h'};
   // Drive the game
-  while((redPieces > 1) && (whitePieces > 1) && (redConcede != 1) && (whiteConcede != 1)){
+  while((redPieces > 0) && (whitePieces > 0) && (redConcede != 1) && (whiteConcede != 1)){
     printMyBoard(myColor);
     printf("It is %c's turn!\n", curTurn);
     int take = canTake(myColor);
