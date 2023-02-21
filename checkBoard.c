@@ -52,7 +52,14 @@ void printCell(unsigned char val){
   if((val == red) || (val == redKing)){
     colorRed();
   }
-  printf("%c", val);
+  if(val == emptyChar){
+    printf("%c", val);
+  }
+   else if((val == redKing) || (val == whiteKing)){
+    printf("X");
+  } else {
+    printf("0");
+  }
   colorWhite();
   printf(" |");
 }

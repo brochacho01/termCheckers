@@ -196,9 +196,9 @@ int calcWhiteRegTake(int i, int j){
 }
 
 int calcWhiteKingTake(int i, int j){ 
-  // Check ahead squares 
+  // Check behind squares 
   if(i < 6){
-    // check left ahead
+    // check left 
     if(j < 6){
       if((board[i+1][j+1] == red) || (board[i+1][j+1] == redKing)){
         // Check to see if there is a landing spot
@@ -207,7 +207,7 @@ int calcWhiteKingTake(int i, int j){
         }
       }
     }
-    // check right ahead
+    // check right
     if(j > 1){
       if((board[i+1][j-1] == red) || (board[i+1][j-1] == redKing)){
         if(board[i+2][j-2] == emptyChar){
@@ -216,17 +216,17 @@ int calcWhiteKingTake(int i, int j){
       }
     } 
   }
-  // Check behind squares
+  // Check ahead squares
   if(i > 2){
-    // check left behind
+    // check left
     if(j < 6){
       if((board[i-1][j+1] == red) || (board[i-1][j+1] == redKing)){
-        if(board[i-2][j-2] == emptyChar){
+        if(board[i-2][j+2] == emptyChar){
           return 1;
         }
       }
     }
-    // check right behind
+    // check right
     if(j > 1){
       if((board[i-1][j-1] == red) || (board[i-1][j-1] == redKing)){
         if(board[i-2][j-2] == emptyChar){
