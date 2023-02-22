@@ -5,6 +5,8 @@
 #include <ctype.h>
 #include <stdlib.h>
 #include <string.h>
+#include <unistd.h>
+#include <termios.h>
 
 int playCheckers(int redPieces, int whitePieces, int myConcede, int opponentConcede);
 void endGame(int redPieces, int whitePieces, int redConcede, int whiteConcede);
@@ -74,7 +76,9 @@ int main(){
   return 0;
 }
 
-
+//TODO refactor to abstract out receiving input from users
+// Also clear buffers after user receives turn info to try and prevent mis-inputs if possible
+// TODO add option to enter d for debug to call a statement to log as much info as possible
 int playCheckers(int redPieces, int whitePieces, int redConcede, int whiteConcede){
   curTurn = 'r';
   char fromCoord[3] = {'h'};
@@ -87,6 +91,8 @@ int playCheckers(int redPieces, int whitePieces, int redConcede, int whiteConced
     // Begin turn logic
     int moveMade = 0;
     while(!moveMade && curTurn == myColor){
+      int inFD = fileno(stdin);
+      tcflush(inFD, TCIOFLUSH);
       // get src and dest coordinates from player
       while((fromCoord[0] == 'h') || (fromCoord[0] == 'p')|| (fromCoord[0] == 'c')){
         printf("Enter coordinate of piece to move, type h for help, type p to print the board: ");
@@ -137,8 +143,6 @@ int playCheckers(int redPieces, int whitePieces, int redConcede, int whiteConced
       fromCoord[0] = 'h';
       toCoord[0] = 'h';
       // If we have already taken a piece need to check to see if we can take again for double
-      //TODO this is not quite right, it should only be the piece that moved that can take again
-      //TODO also currently a piece can theoretically take infinitely many pieces in a turn
       if(take && moveMade){
         take = canTake(curTurn);
         if(take){
@@ -165,7 +169,6 @@ int playCheckers(int redPieces, int whitePieces, int redConcede, int whiteConced
   return 0;
 }
 
-//TODO close sockets before exiting to not force OS to have to
 void endGame(int redPieces, int whitePieces, int redConcede, int whiteConcede){
   printMyBoard(myColor);
   if(redPieces < 1){

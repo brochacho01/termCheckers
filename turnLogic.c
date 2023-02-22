@@ -31,6 +31,8 @@ void turnToKing(int ix, int iy);
 void help(void){
   printf("If you cannot move any pieces, you automatically forfeit!\n");
   printf("If you are able to take a piece, you must.\n");
+  printf("In checkers you can move regular pieces only forward diagonally.\n");
+  printf("When you get your piece to the other side it is kinged and can move all directions diagonally.\n");
   printf("One twist on normal checkers though is that you can take more than two pieces a turn\n");
   printf("When you are asked to enter a coordinate, enter as row-column pairs without spaces.\n");
   printf("For example, if I want to move my piece at row 1, column 5, I would enter it as: 15\n");
@@ -50,6 +52,7 @@ int concede(void){
 }
 
 /* Functions to calculate if a player can take a piece */
+// TODO error in take status checking somewhere for red pieces in late game
 int canTake(char curTurn){
   int take = 0;
   if(curTurn == 'r'){
@@ -69,6 +72,7 @@ int redTake(void){
         // we have found a red piece, need to calc if it can take
         canTake = calcRedRegTake(i, j);
         if(canTake){
+//          printf("can take: i is %d, j is %d\n", i, j);
           return canTake;
         }
       } else if (board[i][j] == redKing){
@@ -86,65 +90,39 @@ int calcRedRegTake(int i, int j){
   // Must move to higher oreder i values
   // Therefore if i > 5, cannot take with given piece
   if(i < 6){
-    // check left ahead
-    if(j < 6){
-      if((board[i+1][j+1] == white) || (board[i+1][j+1] == whiteKing)){
-        // Check to see if there is a landing spot
-        if(board[i+2][j+2] == emptyChar){
-          return 1;
-        }
-      }
+    // check if we will not walk out of bounds and if piece diagonal ahead in either direction is white and we will be landing on empty
+    if((j < 6) && (((board[i+1][j+1] == white) || (board[i+1][j+1] == whiteKing)) && (board[i+2][j+2] == emptyChar))){
+      return 1;
     }
-    // check right ahead
-    if(j > 1){
-      if((board[i+1][j-1] == white) || (board[i+1][j-1] == whiteKing)){
-        if(board[i+2][j-2] == emptyChar){
-          return 1;
-        }
-      }
+    if((j > 1) && (((board[i+1][j-1] == white) || (board[i+1][j-1] == whiteKing)) && (board[i+2][j-2] == emptyChar))){
+      return 1;
     } 
   }
   return 0;  
 }
 
+// Check in each diagonal direction if there is a white piece that then has an empty space "behind" it
 int calcRedKingTake(int i, int j){
   // Check ahead squares 
   if(i < 6){
     // check left ahead
-    if(j < 6){
-      if((board[i+1][j+1] == white) || (board[i+1][j+1] == whiteKing)){
-        // Check to see if there is a landing spot
-        if(board[i+2][j+2] == emptyChar){
-          return 1;
-        }
-      }
+    if((j < 6) && (((board[i+1][j+1] == white) || (board[i+1][j+1] == whiteKing)) && (board[i+2][j+2] == emptyChar))){
+      return 1;
     }
     // check right ahead
-    if(j > 1){
-      if((board[i+1][j-1] == white) || (board[i+1][j-1] == whiteKing)){
-        if(board[i+2][j-2] == emptyChar){
-          return 1;
-        }
-      }
+    if((j > 1) && (((board[i+1][j-1] == white) || (board[i+1][j-1] == whiteKing)) && (board[i+2][j-2] == emptyChar))){
+      return 1;
     } 
   }
   // Check behind squares
   if(i > 2){
     // check left behind
-    if(j < 6){
-      if((board[i-1][j+1] == white) || (board[i-1][j+1] == whiteKing)){
-        if(board[i-2][j-2] == emptyChar){
-          return 1;
-        }
-      }
+    if((j < 6) && (((board[i-1][j+1] == white) || (board[i-1][j+1] == whiteKing)) && (board[i-2][j+2] == emptyChar))){
+      return 1;
     }
     // check right behind
-    if(j > 1){
-      if((board[i-1][j-1] == white) || (board[i-1][j-1] == whiteKing)){
-        if(board[i-2][j-2] == emptyChar){
-          return 1;
-        }
-      }
+    if((j > 1) && (((board[i-1][j-1] == white) || (board[i-1][j-1] == whiteKing)) && (board[i-2][j-2] == emptyChar))){
+      return 1;
     }
   }
   return 0;
@@ -162,6 +140,7 @@ int whiteTake(void){
       } else if(board[i][j] == whiteKing){
         canTake = calcWhiteKingTake(i, j);
         if(canTake){
+//          printf("can take: i is %d, j is %d\n", i, j);
           return canTake;
         }
       }
@@ -175,21 +154,12 @@ int calcWhiteRegTake(int i, int j){
   // Therefore if i > 5, cannot take with given piece
   if(i > 1){
     // check left ahead
-    if(j > 1){
-      if((board[i-1][j-1] == red) || (board[i-1][j-1] == redKing)){
-        // Check to see if there is a landing spot
-        if(board[i-2][j-2] == emptyChar){
-          return 1;
-        }
-      }
+    if((j > 1) && (((board[i-1][j-1] == red) || (board[i-1][j-1] == redKing)) && (board[i-2][j-2] == emptyChar))){
+      return 1;
     }
     // check right ahead
-    if(j < 6){
-      if((board[i-1][j+1] == red) || (board[i-1][j+1] == redKing)){
-        if(board[i-2][j+2] == emptyChar){
-          return 1;
-        }
-      }
+    if((j < 6) && (((board[i-1][j+1] == red) || (board[i-1][j+1] == redKing)) && (board[i-2][j+2] == emptyChar))){
+      return 1;
     } 
   }
   return 0;  
@@ -199,40 +169,23 @@ int calcWhiteKingTake(int i, int j){
   // Check behind squares 
   if(i < 6){
     // check left 
-    if(j < 6){
-      if((board[i+1][j+1] == red) || (board[i+1][j+1] == redKing)){
-        // Check to see if there is a landing spot
-        if(board[i+2][j+2] == emptyChar){
-          return 1;
-        }
-      }
+    if((j < 6) && (((board[i+1][j+1] == red) || (board[i+1][j+1] == redKing)) && (board[i+2][j+2] == emptyChar))){
+      return 1;
     }
     // check right
-    if(j > 1){
-      if((board[i+1][j-1] == red) || (board[i+1][j-1] == redKing)){
-        if(board[i+2][j-2] == emptyChar){
-          return 1;
-        }
-      }
+    if((j > 1) && (((board[i+1][j-1] == red) || (board[i+1][j-1] == redKing)) && (board[i+2][j-2] == emptyChar))){
+      return 1;
     } 
   }
   // Check ahead squares
   if(i > 2){
     // check left
-    if(j < 6){
-      if((board[i-1][j+1] == red) || (board[i-1][j+1] == redKing)){
-        if(board[i-2][j+2] == emptyChar){
-          return 1;
-        }
-      }
+    if((j < 6) && (((board[i-1][j+1] == red) || (board[i-1][j+1] == redKing)) && (board[i-2][j+2] == emptyChar))){
+      return 1;
     }
     // check right
-    if(j > 1){
-      if((board[i-1][j-1] == red) || (board[i-1][j-1] == redKing)){
-        if(board[i-2][j-2] == emptyChar){
-          return 1;
-        }
-      }
+    if((j > 1) && (((board[i-1][j-1] == red) || (board[i-1][j-1] == redKing)) && (board[i-2][j-2] == emptyChar))){
+      return 1;
     }
   }
   return 0;
@@ -347,6 +300,7 @@ int takeWithKing(int ix, int iy, int jx, int jy, int takeColor){
 }
 
 // Do the actual taking of a piece and updating the board
+//TODO refactor this to remove some of the nested if statements
 int processJump(int ix, int iy, int jx, int jy, int takeColor){
   int status = 0;
   // Need to check if we're going left or right
