@@ -37,6 +37,7 @@ void help(void){
   printf("When you are asked to enter a coordinate, enter as row-column pairs without spaces.\n");
   printf("For example, if I want to move my piece at row 1, column 5, I would enter it as: 15\n");
   printf("Additionally, if you would like to concede, press c on request for input\n");
+  printf("Note that Ctrl + C is disabled. Upon mis-input enter invalid second coordinate.\n");
   printf("Press ENTER to continue\n\n");
 }
 
