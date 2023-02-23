@@ -8,6 +8,8 @@ void printBound(void);
 void printRowBound(void);
 void colorRed(void);
 void colorWhite(void);
+void setBackground(int i, int j);
+void resetBackground(void);
 void createBoard(void);
 
 unsigned char board[8][8];

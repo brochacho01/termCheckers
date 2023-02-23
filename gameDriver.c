@@ -20,8 +20,12 @@ char receive_buffer[RECEIVE_BUFFER_SIZE];
 int sock_desc;
 
 int main(){
-  // Work to host/connect to a game
-  signal(SIGINT, sig_handler);
+  // Create an action handler as users tend to panic Ctrl + C upon poor input
+  struct sigaction sa = {
+    .sa_handler = sig_handler,
+    .sa_flags = SA_RESTART};
+  sigaction(SIGINT, &sa, NULL);
+  // Setup a host or connect to a pre-existing host
   printf("Would you like to host or connect? (h/c) ");
   char serv = tolower(getchar());
   while(getchar() != '\n');
@@ -96,8 +100,8 @@ int playCheckers(int redPieces, int whitePieces, int redConcede, int whiteConced
     int moveMade = 0;
     while(!moveMade && curTurn == myColor){
       // Clear any garbage from stdin user could've entered during not their turn
-      int inFD = fileno(stdin);
-      tcflush(inFD, TCIOFLUSH);
+    //  int inFD = fileno(stdin);
+    //  tcflush(inFD, TCIOFLUSH);
       // Get from coordinate
       int inputStatus = getCoordInput(fromCoord, 1);
       // Check if a player chose to concede
@@ -170,6 +174,8 @@ void endGame(int redPieces, int whitePieces, int redConcede, int whiteConcede){
 // Type will either be 1 or 2, 1 represents entering source coord, 2 represents dest
 int getCoordInput(char *userBuf, int type){
    while((userBuf[0] == 'h') || (userBuf[0] == 'p')|| (userBuf[0] == 'c')){
+    int inFD = fileno(stdin);
+    tcflush(inFD, TCIOFLUSH);
     if(type == 1){
       printf("Enter coordinate of piece to move, type h for help, type p to print the board: ");
     } else {
@@ -199,12 +205,7 @@ int getCoordInput(char *userBuf, int type){
 // Make sure that users don't panic Ctrl + C. Also disallow Ctrl + D, program really hates it
 void sig_handler(int sigNum){
   if(sigNum){
-    printf("\nCtrl + C not allowed!\n");
-    printf("If you mis-entered a coordinate, give a bad entry to reset.\n");
-    printf("Please enter a coordinate: ");
-    int inFD = fileno(stdin);
-    tcflush(inFD, TCIOFLUSH);
-    printf("\n");
+    return;
   }
 }
 
