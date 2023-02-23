@@ -6,10 +6,13 @@
 #include <stdlib.h>
 #include <string.h>
 #include <unistd.h>
+#include <signal.h>
 #include <termios.h>
 
 int playCheckers(int redPieces, int whitePieces, int myConcede, int opponentConcede);
 void endGame(int redPieces, int whitePieces, int redConcede, int whiteConcede);
+int getCoordInput(char *userBuf, int type);
+void sig_handler(int sigNum);
 
 char myColor;
 char curTurn;
@@ -18,6 +21,7 @@ int sock_desc;
 
 int main(){
   // Work to host/connect to a game
+  signal(SIGINT, sig_handler);
   printf("Would you like to host or connect? (h/c) ");
   char serv = tolower(getchar());
   while(getchar() != '\n');
@@ -30,10 +34,12 @@ int main(){
     // Init server
     sock_desc = createServerAndWait();
     receiveAck(sock_desc);
-  } else {
+  } else if(serv == 'c') {
     // Connect to server
     sock_desc = connectToServer();
     sendAck(sock_desc);
+  } else {
+    printf("Bad input, closing.\n");
   }
   if(sock_desc == -1){
     printf("Fatal error during connection, there is no host on this machine.\n");
@@ -76,9 +82,7 @@ int main(){
   return 0;
 }
 
-//TODO refactor to abstract out receiving input from users
 // Also clear buffers after user receives turn info to try and prevent mis-inputs if possible
-// TODO add option to enter d for debug to call a statement to log as much info as possible
 int playCheckers(int redPieces, int whitePieces, int redConcede, int whiteConcede){
   curTurn = 'r';
   char fromCoord[3] = {'h'};
@@ -91,51 +95,31 @@ int playCheckers(int redPieces, int whitePieces, int redConcede, int whiteConced
     // Begin turn logic
     int moveMade = 0;
     while(!moveMade && curTurn == myColor){
+      // Clear any garbage from stdin user could've entered during not their turn
       int inFD = fileno(stdin);
       tcflush(inFD, TCIOFLUSH);
-      // get src and dest coordinates from player
-      while((fromCoord[0] == 'h') || (fromCoord[0] == 'p')|| (fromCoord[0] == 'c')){
-        printf("Enter coordinate of piece to move, type h for help, type p to print the board: ");
-        fgets(fromCoord, 3, stdin);
-        printf("\n");
-        if(tolower(fromCoord[0]) == 'h'){
-          help();
-        } else if(tolower(fromCoord[0]) == 'p'){
-          printMyBoard(myColor);
-          printf("Press ENTER to continue\n");
-        } else if(tolower(fromCoord[0]) == 'c'){
-          if(concede()){
-            if(curTurn == 'r'){
-              redConcede = 1;
-            } else {
-              whiteConcede = 1;
-            }
-            sendTurnData(sock_desc, receive_buffer, &redPieces, &whitePieces, &redConcede, &whiteConcede);
-            endGame(redPieces, whitePieces, redConcede, whiteConcede);
+      // Get from coordinate
+      int inputStatus = getCoordInput(fromCoord, 1);
+      // Check if a player chose to concede
+      if(!inputStatus){
+          if(curTurn == 'r'){
+            redConcede = 1;         
+          } else {
+            whiteConcede = 1;
           }
-        }
-        while(getchar() != '\n');
+          sendTurnData(sock_desc, receive_buffer, &redPieces, &whitePieces, &redConcede, &whiteConcede);
+          endGame(redPieces, whitePieces, redConcede, whiteConcede);
       }
-      while((toCoord[0] == 'h') || (toCoord[0] == 'p') || (toCoord[0] == 'c')){
-        printf("Enter the destination coordinate of piece to move, type h for help, type p to print the board: ");
-        fgets(toCoord, 3, stdin);
-        printf("\n");
-        if(tolower(toCoord[0]) == 'h'){
-          help();
-        } else if(tolower(toCoord[0]) == 'p'){
-          printMyBoard(myColor);
-          printf("Press ENTER to continue\n");
-        } else if(tolower(fromCoord[0]) == 'c'){
-          if(concede()){
-            if(curTurn == 'r'){
-              redConcede = 1;
-            } else {
-              whiteConcede = 1;
-            }
-            endGame(redPieces, whitePieces, redConcede, whiteConcede);
+      // Get to coordinate
+      inputStatus = getCoordInput(toCoord, 2);
+      if(!inputStatus){
+          if(curTurn == 'r'){
+            redConcede = 1;         
+          } else {
+            whiteConcede = 1;
           }
-        }
-        while(getchar() != '\n');
+          sendTurnData(sock_desc, receive_buffer, &redPieces, &whitePieces, &redConcede, &whiteConcede);
+          endGame(redPieces, whitePieces, redConcede, whiteConcede);
       }
       // try to validate input move, otherwise loop and get new coords
       moveMade = validateMove(fromCoord, toCoord, take, curTurn, &redPieces, &whitePieces);
@@ -152,13 +136,13 @@ int playCheckers(int redPieces, int whitePieces, int redConcede, int whiteConced
       } 
     }
     // If it is not our turn, wait to receive items
-    // Need to make sure to alternate turns
     if(curTurn != myColor){
       printf("Not my turn!\n");
       receiveTurnData(sock_desc, receive_buffer, &redPieces, &whitePieces, &redConcede, &whiteConcede);
     } else {
       sendTurnData(sock_desc, receive_buffer, &redPieces, &whitePieces, &redConcede, &whiteConcede);
     }
+    // Need to make sure to alternate turns
     if(curTurn == 'r'){
       curTurn = 'w';
     } else {
@@ -182,3 +166,45 @@ void endGame(int redPieces, int whitePieces, int redConcede, int whiteConcede){
   }
   exit(0);
 }
+
+// Type will either be 1 or 2, 1 represents entering source coord, 2 represents dest
+int getCoordInput(char *userBuf, int type){
+   while((userBuf[0] == 'h') || (userBuf[0] == 'p')|| (userBuf[0] == 'c')){
+    if(type == 1){
+      printf("Enter coordinate of piece to move, type h for help, type p to print the board: ");
+    } else {
+      printf("Enter the destination coordinate of piece to move, type h for help, type p to print the board: ");
+    }
+    // Check to see if a user tries to enter a Ctrl + D and recover
+    char *readStatus = fgets(userBuf, 3, stdin);
+    if(!readStatus){
+      clearerr(stdin);
+    }
+    printf("\n");
+    if(tolower(userBuf[0]) == 'h'){
+      help();
+    } else if(tolower(userBuf[0]) == 'p'){
+      printMyBoard(myColor);
+      printf("Press ENTER to continue\n");
+    } else if(tolower(userBuf[0]) == 'c'){
+      if(concede()){
+        return 0;
+      }
+    }
+    while(getchar() != '\n');
+  }
+  return 1;
+}
+
+// Make sure that users don't panic Ctrl + C. Also disallow Ctrl + D, program really hates it
+void sig_handler(int sigNum){
+  if(sigNum){
+    printf("\nCtrl + C not allowed!\n");
+    printf("If you mis-entered a coordinate, give a bad entry to reset.\n");
+    printf("Please enter a coordinate: ");
+    int inFD = fileno(stdin);
+    tcflush(inFD, TCIOFLUSH);
+    printf("\n");
+  }
+}
+
