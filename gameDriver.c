@@ -20,7 +20,8 @@ char receive_buffer[RECEIVE_BUFFER_SIZE];
 int sock_desc;
 
 int main(){
-  // Create an action handler as users tend to panic Ctrl + C upon poor input
+  // Create an action handler as users tend to panic Ctrl + C upon poor input, want to make sure to recover
+  // Properly if it happens during input
   struct sigaction sa = {
     .sa_handler = sig_handler,
     .sa_flags = SA_RESTART};
@@ -86,22 +87,19 @@ int main(){
   return 0;
 }
 
-// Also clear buffers after user receives turn info to try and prevent mis-inputs if possible
+// Main driver of the game
 int playCheckers(int redPieces, int whitePieces, int redConcede, int whiteConcede){
   curTurn = 'r';
   char fromCoord[3] = {'h'};
   char toCoord[3] = {'h'};
-  // Drive the game
+  // Drive the game, loop until an exit condition is met
   while((redPieces > 0) && (whitePieces > 0) && (redConcede != 1) && (whiteConcede != 1)){
     printMyBoard(myColor);
     printf("It is %c's turn!\n", curTurn);
     int take = canTake(myColor);
-    // Begin turn logic
+    // Begin turn logic, loop until player executes a move and is unable to do more
     int moveMade = 0;
     while(!moveMade && curTurn == myColor){
-      // Clear any garbage from stdin user could've entered during not their turn
-    //  int inFD = fileno(stdin);
-    //  tcflush(inFD, TCIOFLUSH);
       // Get from coordinate
       int inputStatus = getCoordInput(fromCoord, 1);
       // Check if a player chose to concede
@@ -181,7 +179,7 @@ int getCoordInput(char *userBuf, int type){
     } else {
       printf("Enter the destination coordinate of piece to move, type h for help, type p to print the board: ");
     }
-    // Check to see if a user tries to enter a Ctrl + D and recover
+    // Check to see if a user tries to enter a Ctrl + D and recover properly
     char *readStatus = fgets(userBuf, 3, stdin);
     if(!readStatus){
       clearerr(stdin);
@@ -202,7 +200,7 @@ int getCoordInput(char *userBuf, int type){
   return 1;
 }
 
-// Make sure that users don't panic Ctrl + C. Also disallow Ctrl + D, program really hates it
+// Make sure that users don't panic Ctrl + C.
 void sig_handler(int sigNum){
   if(sigNum){
     return;

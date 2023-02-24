@@ -16,6 +16,7 @@ unsigned char board[8][8];
 
 /* Interface to print the board orientated towards the passed in color */
 void printMyBoard(char myColor){
+  printf("\n");
   if(myColor == 'r'){
     printBoardForRed();
   } else {

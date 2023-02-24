@@ -3,7 +3,6 @@
 #include <ctype.h>
 #include "globals.h"
 #include "checkBoard.h"
-#include "errorReporting.h"
 
 void help(void);
 int concede(void);
@@ -29,15 +28,16 @@ void turnToKing(int ix, int iy);
 /* Group of functions that calculate if a piece can be taken */
 
 void help(void){
-  printf("If you cannot move any pieces, you automatically forfeit!\n");
+  printf("If you cannot move any pieces, you must forfeit!\n");
   printf("If you are able to take a piece, you must.\n");
-  printf("In checkers you can move regular pieces only forward diagonally.\n");
+  printf("In checkers you can move regular pieces only diagonally forward.\n");
   printf("When you get your piece to the other side it is kinged and can move all directions diagonally.\n");
-  printf("One twist on normal checkers though is that you can take more than two pieces a turn\n");
+  printf("One twist on normal checkers though is that you can take more than two pieces a turn.\n");
   printf("When you are asked to enter a coordinate, enter as row-column pairs without spaces.\n");
   printf("For example, if I want to move my piece at row 1, column 5, I would enter it as: 15\n");
   printf("Additionally, if you would like to concede, press c on request for input\n");
-  printf("Note that Ctrl + C is disabled. Upon mis-input enter invalid second coordinate.\n");
+  printf("Note that Ctrl + C is disabled. Upon mis-input, enter invalid second coordinate to reset inputs.\n");
+  printf("If you truly desire to close the program, either concede or enter Ctrl + \\.\n");
   printf("Press ENTER to continue\n\n");
 }
 
@@ -53,7 +53,6 @@ int concede(void){
 }
 
 /* Functions to calculate if a player can take a piece */
-// TODO error in take status checking somewhere for red pieces in late game
 int canTake(char curTurn){
   int take = 0;
   if(curTurn == 'r'){
@@ -73,7 +72,6 @@ int redTake(void){
         // we have found a red piece, need to calc if it can take
         canTake = calcRedRegTake(i, j);
         if(canTake){
-//          printf("can take: i is %d, j is %d\n", i, j);
           return canTake;
         }
       } else if (board[i][j] == redKing){
@@ -141,7 +139,6 @@ int whiteTake(void){
       } else if(board[i][j] == whiteKing){
         canTake = calcWhiteKingTake(i, j);
         if(canTake){
-//          printf("can take: i is %d, j is %d\n", i, j);
           return canTake;
         }
       }
@@ -256,7 +253,7 @@ int processTake(int ix, int iy, int jx, int jy, int *redPieces, int *whitePieces
     takeColor = takeRed;
   } else {
     printf("CRITICAL ERROR\n");
-    recordErrorAndClose(ix, iy, jx, jy, redPieces, whitePieces);
+    exit(-1);
   }
   if((board[ix][iy] == red) || (board[ix][iy] == white)){
     status = takeWithReg(ix, iy, jx, jy, takeColor);
