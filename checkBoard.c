@@ -22,6 +22,7 @@ void printMyBoard(char myColor){
   } else {
     printBoardForWhite();
   }
+  printf("\n");
 }
 
 void printBoardForWhite(void){
