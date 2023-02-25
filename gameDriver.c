@@ -173,7 +173,7 @@ void endGame(int redPieces, int whitePieces, int redConcede, int whiteConcede){
 int getCoordInput(char *userBuf, int type){
    while((userBuf[0] == 'h') || (userBuf[0] == 'p')|| (userBuf[0] == 'c')){
     int inFD = fileno(stdin);
-    tcflush(inFD, TCIOFLUSH);
+    tcflush(inFD, TCIFLUSH);
     if(type == 1){
       printf("Enter coordinate of piece to move, type h for help, type p to print the board: ");
     } else {
