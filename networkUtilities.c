@@ -88,23 +88,27 @@ int receiveAck(int fd){
 
 /* Helper functions for sending and receiving turn data */
 int receiveTurnData(int fd, char * receive_buffer, int *redPieces, int *whitePieces, int *redConcede, 
-int *whiteConcede){
+int *whiteConcede, char *curTurn){
   receive_board(fd, receive_buffer);
   sendAck(fd);
   receivePieces(fd, redPieces, whitePieces);
   sendAck(fd);
   receiveConcedeStatus(fd, redConcede, whiteConcede);
   sendAck(fd);
+  receiveCurTurn(fd, curTurn);
+  sendAck(fd);
   return 0;
 }
 
 int sendTurnData(int fd, char * receive_buffer, int *redPieces, int *whitePieces, int *redConcede, 
-int *whiteConcede){
+int *whiteConcede, char *curTurn){
   send_board(fd, receive_buffer);
   receiveAck(fd);
   sendPieces(fd, redPieces, whitePieces);
   receiveAck(fd);
   sendConcedeStatus(fd, redConcede, whiteConcede);
+  receiveAck(fd);
+  sendCurTurn(fd, curTurn);
   receiveAck(fd);
   return 0;
 }
@@ -141,6 +145,17 @@ int sendConcedeStatus(int fd, int *redConcede, int *whiteConcede){
   return 0;
 }
 
+int sendCurTurn(int fd, char *curTurn){
+	write(fd, curTurn, sizeof(char));
+	receiveAck(fd);
+	return 0;
+}
+
+int receiveCurTurn(int fd, char *curTurn){
+	read(fd, curTurn, sizeof(char));
+	sendAck(fd);
+	return 0;
+}
 
 void init_sock_addr_in(struct sockaddr_in* sock_addr, sa_family_t sa_family, const char * ip_addr, 
 in_port_t port){

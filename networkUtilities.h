@@ -25,9 +25,11 @@ int send_message(int fd, char * message);
 int sendAck(int fd);
 int receiveAck(int fd);
 int receiveTurnData(int fd, char * receive_buffer, int *redPieces, int *whitePieces, int *redConcede, 
-int *whiteConcede);
+int *whiteConcede, char *curTurn);
 int sendTurnData(int fd, char * receive_buffer,int *redPieces, int *whitePieces, int *redConcede, 
-int *whiteConcede);
+int *whiteConcede, char *curTurn);
+int sendCurTurn(int fd, char *curTurn);
+int receiveCurTurn(int fd, char *curTurn);
 
 //TCP
 void init_sock_addr_in(struct sockaddr_in* sock_addr, sa_family_t sa_family, const char * ip_addr, in_port_t port);
