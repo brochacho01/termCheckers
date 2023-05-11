@@ -5,5 +5,6 @@
 
 void printMyBoard(char myColor);
 void createBoard(void);
+void createTestBoard(void);
 
 extern unsigned char board[8][8];

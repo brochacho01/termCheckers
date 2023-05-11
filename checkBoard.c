@@ -128,3 +128,14 @@ void createBoard(void){
 }
 
 
+void createTestBoard(void){
+	for(int i = 0; i < 8; i++){
+		for(int j = 0; j < 8; j++){
+			board[i][j] = emptyChar;
+		}
+	}
+	board[1][1] = red;
+	board[2][2] = whiteKing;
+}
+
+

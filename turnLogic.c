@@ -114,7 +114,7 @@ int calcRedKingTake(int i, int j){
     } 
   }
   // Check behind squares
-  if(i > 2){
+  if(i > 1){
     // check left behind
     if((j < 6) && (((board[i-1][j+1] == white) || (board[i-1][j+1] == whiteKing)) && (board[i-2][j+2] == emptyChar))){
       return 1;
@@ -164,6 +164,8 @@ int calcWhiteRegTake(int i, int j){
 }
 
 int calcWhiteKingTake(int i, int j){ 
+  printf("Fell into calc white king take\n");
+  printf("i: %d. j: %d\n", i, j);
   // Check behind squares 
   if(i < 6){
     // check left 
@@ -176,12 +178,16 @@ int calcWhiteKingTake(int i, int j){
     } 
   }
   // Check ahead squares
-  if(i > 2){
+  if(i > 1){
     // check left
     if((j < 6) && (((board[i-1][j+1] == red) || (board[i-1][j+1] == redKing)) && (board[i-2][j+2] == emptyChar))){
       return 1;
     }
     // check right
+    printf("%c\n", board[i-1][j-1]);
+    if((j > 1) && (board[i-1][j-1] == red)){
+	printf("valid j and red piece in direction i-1 j-1\n");
+    }
     if((j > 1) && (((board[i-1][j-1] == red) || (board[i-1][j-1] == redKing)) && (board[i-2][j-2] == emptyChar))){
       return 1;
     }

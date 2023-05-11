@@ -90,6 +90,7 @@ int main(){
 
 // Main driver of the game
 int playCheckers(int redPieces, int whitePieces, int redConcede, int whiteConcede){
+	//curTurn = 'r';
 	curTurn = 'r';
 	char fromCoord[3] = {'h'};
 	char toCoord[3] = {'h'};
@@ -145,8 +146,11 @@ int playCheckers(int redPieces, int whitePieces, int redConcede, int whiteConced
 					curTurn = 'r';
 				}
 			}
-			// Send turn data to opponent after every move is made 
-			sendTurnData(sock_desc, receive_buffer, &redPieces, &whitePieces, &redConcede, &whiteConcede, &curTurn);
+			// Send turn data to opponent after every move is made, but don't transmit on bad input 
+			if(take || moveMade){
+				printMyBoard(myColor);
+				sendTurnData(sock_desc, receive_buffer, &redPieces, &whitePieces, &redConcede, &whiteConcede, &curTurn);
+			}
 		}
 		// If it is not our turn, wait to receive items
 		if(curTurn != myColor){
