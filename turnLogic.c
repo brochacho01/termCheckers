@@ -164,8 +164,6 @@ int calcWhiteRegTake(int i, int j){
 }
 
 int calcWhiteKingTake(int i, int j){ 
-  printf("Fell into calc white king take\n");
-  printf("i: %d. j: %d\n", i, j);
   // Check behind squares 
   if(i < 6){
     // check left 
