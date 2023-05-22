@@ -256,8 +256,8 @@ int processTake(int ix, int iy, int jx, int jy, int *redPieces, int *whitePieces
   } else if ((board[ix][iy] == white) || (board[ix][iy] == whiteKing)){
     takeColor = takeRed;
   } else {
-    printf("CRITICAL ERROR\n");
-    exit(-1);
+    printf("Invalid Coordinates entered, please try again\n");
+    return 0;
   }
   if((board[ix][iy] == red) || (board[ix][iy] == white)){
     status = takeWithReg(ix, iy, jx, jy, takeColor);
